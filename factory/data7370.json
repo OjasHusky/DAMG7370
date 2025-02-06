@@ -1,0 +1,9 @@
+{
+	"name": "data7370",
+	"location": "eastus",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "ee26e5ed-9368-4ebb-81ca-380b22eaa83f",
+		"tenantId": "a8eec281-aaa3-4dae-ac9b-9a398b9215e7"
+	}
+}
