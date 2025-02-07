@@ -6,8 +6,6 @@
 				"name": "Parquet_to_Snowflake",
 				"description": "",
 				"type": "Copy",
-				"state": "Inactive",
-				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [
 					{
 						"activity": "CSV_to_Parquet",
@@ -28,7 +26,7 @@
 					"source": {
 						"type": "ParquetSource",
 						"storeSettings": {
-							"type": "AzureBlobFSReadSettings",
+							"type": "AzureBlobStorageReadSettings",
 							"recursive": true,
 							"enablePartitionDiscovery": false
 						},
@@ -38,7 +36,6 @@
 					},
 					"sink": {
 						"type": "SnowflakeV2Sink",
-						"preCopyScript": "Truncate Table\nSTAGE.SEATTLE_PET_LICENSES;",
 						"importSettings": {
 							"type": "SnowflakeImportCopyCommand"
 						}
@@ -77,6 +74,8 @@
 			{
 				"name": "CSV_to_Parquet",
 				"type": "Copy",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [],
 				"policy": {
 					"timeout": "0.12:00:00",
@@ -91,7 +90,7 @@
 						"type": "DelimitedTextSource",
 						"storeSettings": {
 							"type": "AzureBlobFSReadSettings",
-							"recursive": true,
+							"recursive": false,
 							"enablePartitionDiscovery": false
 						},
 						"formatSettings": {
@@ -101,7 +100,7 @@
 					"sink": {
 						"type": "ParquetSink",
 						"storeSettings": {
-							"type": "AzureBlobFSWriteSettings"
+							"type": "AzureBlobStorageWriteSettings"
 						},
 						"formatSettings": {
 							"type": "ParquetWriteSettings"
@@ -144,11 +143,11 @@
 			},
 			"mySchemaName": {
 				"type": "String",
-				"defaultValue": "STAGE"
+				"defaultValue": "SEATTLE_SCHEMA"
 			},
 			"myTableName": {
 				"type": "String",
-				"defaultValue": "SEATTLE_PET_LICENSES"
+				"defaultValue": "PET_LICENSE_STAGE"
 			}
 		},
 		"annotations": []
