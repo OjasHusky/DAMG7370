@@ -6,6 +6,8 @@
 				"name": "Parquet_to_Snowflake",
 				"description": "",
 				"type": "Copy",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [
 					{
 						"activity": "CSV_to_Parquet",
@@ -34,6 +36,13 @@
 							"type": "ParquetReadSettings"
 						}
 					},
+					"sink": {
+						"type": "SnowflakeV2Sink",
+						"preCopyScript": "Truncate Table\nSTAGE.SEATTLE_PET_LICENSES;",
+						"importSettings": {
+							"type": "SnowflakeImportCopyCommand"
+						}
+					},
 					"enableStaging": false
 				},
 				"inputs": [
@@ -43,6 +52,22 @@
 						"parameters": {
 							"fileName": {
 								"value": "@variables('myfileName')",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "SnowflakeTable1",
+						"type": "DatasetReference",
+						"parameters": {
+							"SchemaName": {
+								"value": "@variables('mySchemaName')",
+								"type": "Expression"
+							},
+							"TableName": {
+								"value": "@variables('myTableName')",
 								"type": "Expression"
 							}
 						}
@@ -116,6 +141,14 @@
 			"myfileName": {
 				"type": "String",
 				"defaultValue": "pet_lic_data.parquet"
+			},
+			"mySchemaName": {
+				"type": "String",
+				"defaultValue": "STAGE"
+			},
+			"myTableName": {
+				"type": "String",
+				"defaultValue": "SEATTLE_PET_LICENSES"
 			}
 		},
 		"annotations": []
