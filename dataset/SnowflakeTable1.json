@@ -9,7 +9,7 @@
 			"SchemaName": {
 				"type": "string"
 			},
-			"SEATTLE_PET_LICENSE": {
+			"TableName": {
 				"type": "string"
 			}
 		},
