@@ -1,0 +1,42 @@
+{
+	"name": "dataflow1",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "DelimitedText1",
+						"type": "DatasetReference"
+					},
+					"name": "readCSVfile"
+				}
+			],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          License_Issue_Date as string,",
+				"          License_Number as string,",
+				"          {Animal's_Name} as string,",
+				"          Species as string,",
+				"          Primary_Breed as string,",
+				"          Secondary_Breed as string,",
+				"          ZIP_Code as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     limit: 100,",
+				"     ignoreNoFilesFound: false) ~> readCSVfile",
+				"readCSVfile derive(License_Issue_Date = toDate((License_Issue_Date),'MMMM dd yyyy'),",
+				"          Secondary_Breed = upper(Secondary_Breed),",
+				"          Species = upper(Species),",
+				"          {Animal's_Name} = translate({Animal's_Name}, '[]()', \"\")) ~> derivedColumn1"
+			]
+		}
+	}
+}
