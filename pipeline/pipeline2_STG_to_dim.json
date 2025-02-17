@@ -74,6 +74,8 @@
 			{
 				"name": "DIM_Location_Load",
 				"type": "ExecuteDataFlow",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [
 					{
 						"activity": "DIM_Breed_Load",
