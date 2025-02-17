@@ -1,0 +1,161 @@
+{
+	"name": "stg_to_dim",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "SnowflakeSTG_DataFlow",
+						"type": "DatasetReference"
+					},
+					"name": "STGData"
+				},
+				{
+					"dataset": {
+						"referenceName": "DIM_BREED",
+						"type": "DatasetReference"
+					},
+					"name": "DIMBreedMaxID"
+				},
+				{
+					"dataset": {
+						"referenceName": "DIM_BREED",
+						"type": "DatasetReference"
+					},
+					"name": "DIMBreedTable"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "DIM_BREED",
+						"type": "DatasetReference"
+					},
+					"name": "sink"
+				}
+			],
+			"transformations": [
+				{
+					"name": "SrcDataWithSK"
+				},
+				{
+					"name": "GroupingRequiredCols"
+				},
+				{
+					"name": "mxBreedSKDriftedCol",
+					"description": "Creates an explicit mapping for each drifted column"
+				},
+				{
+					"name": "LeftJoinGrpColsDimBreedTable"
+				},
+				{
+					"name": "FilterExistingRows"
+				},
+				{
+					"name": "surrogateKey"
+				},
+				{
+					"name": "derivedColumns"
+				}
+			],
+			"scriptLines": [
+				"parameters{",
+				"     job_id as string ('10')",
+				"}",
+				"source(output(",
+				"          LICENSE_ISSUE_DATE as string,",
+				"          LICENSE_NUMBER as string,",
+				"          ANIMAL_NAME as string,",
+				"          SPECIES as string,",
+				"          PRIMARY_BREED as string,",
+				"          SECONDARY_BREED as string,",
+				"          ZIP_CODE as string,",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> STGData",
+				"source(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     query: 'Select NVL(max(BREED_SK),0) as mxBreedSK from DIM_BREED',",
+				"     format: 'query') ~> DIMBreedMaxID",
+				"source(output(",
+				"          BREED_SK as string,",
+				"          SPECIES_NAME as string,",
+				"          PRIMARY_BREED_NAME as string,",
+				"          SECONDARY_BREED_NAME as string,",
+				"          START_DT as string,",
+				"          END_DT as string,",
+				"          IS_CURRENT as string,",
+				"          BREED_DK as string,",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> DIMBreedTable",
+				"STGData, DIMBreedMaxID join(1==1,",
+				"     joinType:'cross',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> SrcDataWithSK",
+				"mxBreedSKDriftedCol aggregate(groupBy(MXBREEDSK,",
+				"          SPECIES,",
+				"          PRIMARY_BREED,",
+				"          SECONDARY_BREED),",
+				"     ROW_COUNT = count(LICENSE_NUMBER)) ~> GroupingRequiredCols",
+				"SrcDataWithSK derive(MXBREEDSK = toDecimal(byName('MXBREEDSK'))) ~> mxBreedSKDriftedCol",
+				"GroupingRequiredCols, DIMBreedTable join(PRIMARY_BREED == PRIMARY_BREED_NAME",
+				"     && SECONDARY_BREED == SECONDARY_BREED_NAME",
+				"     && SPECIES == SPECIES_NAME,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> LeftJoinGrpColsDimBreedTable",
+				"LeftJoinGrpColsDimBreedTable filter(isNull(SPECIES_NAME)&&isNull(PRIMARY_BREED_NAME)&&isNull(SECONDARY_BREED_NAME)) ~> FilterExistingRows",
+				"FilterExistingRows keyGenerate(output(ROW_NUM as long),",
+				"     startAt: 1L,",
+				"     stepValue: 1L) ~> surrogateKey",
+				"surrogateKey derive(BreedSK = toInteger(MXBREEDSK+ROW_NUM),",
+				"          Di_job_id = $job_id,",
+				"          DI_job_dt = currentTimestamp( )) ~> derivedColumns",
+				"derivedColumns sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          BREED_SK as string,",
+				"          SPECIES_NAME as string,",
+				"          PRIMARY_BREED_NAME as string,",
+				"          SECONDARY_BREED_NAME as string,",
+				"          START_DT as string,",
+				"          END_DT as string,",
+				"          IS_CURRENT as string,",
+				"          BREED_DK as string,",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     stageInsert: true,",
+				"     mapColumn(",
+				"          BREED_SK = BreedSK,",
+				"          SPECIES_NAME = SPECIES,",
+				"          PRIMARY_BREED_NAME = PRIMARY_BREED,",
+				"          SECONDARY_BREED_NAME = SECONDARY_BREED,",
+				"          START_DT,",
+				"          END_DT,",
+				"          IS_CURRENT,",
+				"          BREED_DK,",
+				"          DI_JOB_ID = derivedColumns@Di_job_id,",
+				"          DI_LOAD_DT = DI_job_dt",
+				"     )) ~> sink"
+			]
+		}
+	}
+}
