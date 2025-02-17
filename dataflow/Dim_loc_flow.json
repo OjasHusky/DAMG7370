@@ -1,0 +1,83 @@
+{
+	"name": "Dim_loc_flow",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "geo_data",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "dim_location",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "surrogateKey"
+				},
+				{
+					"name": "derivedColumns"
+				},
+				{
+					"name": "MapDrifted1",
+					"description": "Creates an explicit mapping for each drifted column"
+				}
+			],
+			"scriptLines": [
+				"parameters{",
+				"     job_id as string ('01')",
+				"}",
+				"source(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source1",
+				"source1 keyGenerate(output(SK_ID as long),",
+				"     startAt: 1L,",
+				"     stepValue: 1L) ~> surrogateKey",
+				"surrogateKey derive(di_job_id = $job_id,",
+				"          di_job_dt = currentTimestamp()) ~> derivedColumns",
+				"derivedColumns derive(state_fips = toString(byName('state_fips')),",
+				"          state = toString(byName('state')),",
+				"          state_abbr = toString(byName('state_abbr')),",
+				"          zipcode = toString(byName('zipcode')),",
+				"          county = toString(byName('county')),",
+				"          city = toString(byName('city'))) ~> MapDrifted1",
+				"MapDrifted1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          LOCATION_SK as string,",
+				"          CITY as string,",
+				"          STATE as string,",
+				"          STATE_ABBR as string,",
+				"          ZIP_CODE as string,",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     stageInsert: true,",
+				"     mapColumn(",
+				"          LOCATION_SK = SK_ID,",
+				"          CITY = city,",
+				"          STATE = state,",
+				"          STATE_ABBR = state_abbr,",
+				"          ZIP_CODE = zipcode,",
+				"          DI_JOB_ID = di_job_id,",
+				"          DI_LOAD_DT = di_job_dt",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}
