@@ -1,5 +1,5 @@
 {
-	"name": "stg_to_dim",
+	"name": "Dim_Breed_flow",
 	"properties": {
 		"type": "MappingDataFlow",
 		"typeProperties": {
