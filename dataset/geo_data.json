@@ -8,7 +8,7 @@
 		"parameters": {
 			"LocFileName": {
 				"type": "string",
-				"defaultValue": "geo_data.csv"
+				"defaultValue": "geo-data.csv"
 			}
 		},
 		"annotations": [],
