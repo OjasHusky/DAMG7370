@@ -1,5 +1,5 @@
 {
-	"name": "pipeline2_STG_to_dim",
+	"name": "pipeline2_STG_to_dimFct",
 	"properties": {
 		"activities": [
 			{
@@ -37,6 +37,8 @@
 			{
 				"name": "DIM_Breed_Load",
 				"type": "ExecuteDataFlow",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [
 					{
 						"activity": "DF_SeattleLicenses_Cleaning",
@@ -95,6 +97,36 @@
 				"typeProperties": {
 					"dataflow": {
 						"referenceName": "Dim_loc_flow",
+						"type": "DataFlowReference",
+						"parameters": {
+							"job_id": {
+								"value": "'@{substring(pipeline().RunId,1,10)}'",
+								"type": "Expression"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "FCT_PET_LIC_Load",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "FCT_LOAD_flow",
 						"type": "DataFlowReference",
 						"parameters": {
 							"job_id": {
