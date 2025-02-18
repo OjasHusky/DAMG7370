@@ -184,7 +184,7 @@
 				"     matchType:'exact',",
 				"     ignoreSpaces: false,",
 				"     broadcast: 'auto')~> joinMxSK",
-				"derivedColumn3 filter(STATE != '') ~> filterLoc",
+				"derivedColumn3 filter(STATE == 'Washington') ~> filterLoc",
 				"sourceSTG derive(ZIP_CODE = iif(isNull(ZIP_CODE), '', ZIP_CODE),",
 				"          SPECIES = iif(isNull(SPECIES), '', SPECIES),",
 				"          SECONDARY_BREED = iif(isNull(SECONDARY_BREED), '', SECONDARY_BREED)) ~> derivedColumn2",
