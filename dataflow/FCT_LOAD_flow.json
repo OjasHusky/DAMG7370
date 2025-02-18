@@ -72,7 +72,13 @@
 					"name": "joinMxSK"
 				},
 				{
-					"name": "filter1"
+					"name": "filterLoc"
+				},
+				{
+					"name": "derivedColumn2"
+				},
+				{
+					"name": "derivedColumn3"
 				}
 			],
 			"scriptLines": [
@@ -144,12 +150,12 @@
 				"     validateSchema: false,",
 				"     query: 'Select NVL(max(pet_lic_sk),0) as mxPetLicenseSK from FCT_PET_LIC',",
 				"     format: 'query') ~> MaxFctSK",
-				"sourceSTG, sourceLoc join(sourceSTG@ZIP_CODE == sourceLoc@ZIP_CODE,",
+				"derivedColumn2, filterLoc join(derivedColumn2@ZIP_CODE == sourceLoc@ZIP_CODE,",
 				"     joinType:'inner',",
 				"     matchType:'exact',",
 				"     ignoreSpaces: false,",
 				"     broadcast: 'auto')~> joinLoc",
-				"filter1, sourceBreed join(SPECIES == SPECIES_NAME",
+				"joinLoc, sourceBreed join(SPECIES == SPECIES_NAME",
 				"     && PRIMARY_BREED == PRIMARY_BREED_NAME",
 				"     && SECONDARY_BREED == SECONDARY_BREED_NAME,",
 				"     joinType:'inner',",
@@ -170,14 +176,19 @@
 				"joinMxSK aggregate(groupBy(LOCATION_SK,",
 				"          BREED_SK,",
 				"          DATE_DIM_SK,",
-				"          MXPETLICENSESK),",
+				"          MXPETLICENSESK,",
+				"          LICENSE_NUMBER),",
 				"     Row_Count = count(LICENSE_NUMBER)) ~> aggregatedCols",
 				"joinDate, MaxFctSK join(1==1,",
 				"     joinType:'cross',",
 				"     matchType:'exact',",
 				"     ignoreSpaces: false,",
 				"     broadcast: 'auto')~> joinMxSK",
-				"joinLoc filter(ERROR_FUNCTION('')) ~> filter1",
+				"derivedColumn3 filter(STATE != '') ~> filterLoc",
+				"sourceSTG derive(ZIP_CODE = iif(isNull(ZIP_CODE), '', ZIP_CODE),",
+				"          SPECIES = iif(isNull(SPECIES), '', SPECIES),",
+				"          SECONDARY_BREED = iif(isNull(SECONDARY_BREED), '', SECONDARY_BREED)) ~> derivedColumn2",
+				"sourceLoc derive(STATE = iif(STATE != 'Washington', '', STATE)) ~> derivedColumn3",
 				"surrogateKey sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
@@ -201,7 +212,8 @@
 				"          ISSUE_DATE_SK = DATE_DIM_SK,",
 				"          BREED_SK,",
 				"          DI_JOB_ID = di_job_id,",
-				"          DI_LOAD_DT = di_load_dt",
+				"          DI_LOAD_DT = di_load_dt,",
+				"          LIC_NUM = LICENSE_NUMBER",
 				"     )) ~> sink1"
 			]
 		}
