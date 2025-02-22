@@ -1,0 +1,53 @@
+{
+	"name": "SnowflakePrecinct",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "Snowflake2",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "SnowflakeV2Table",
+		"schema": [
+			{
+				"name": "PRECINCT_SK",
+				"type": "NUMBER",
+				"precision": 10,
+				"scale": 0
+			},
+			{
+				"name": "ARREST_PRECINCT_ID",
+				"type": "NUMBER",
+				"precision": 10,
+				"scale": 0
+			},
+			{
+				"name": "ARREST_PRECINCT_DK",
+				"type": "VARCHAR"
+			},
+			{
+				"name": "BOROUGH",
+				"type": "VARCHAR"
+			},
+			{
+				"name": "START_DATE",
+				"type": "DATE"
+			},
+			{
+				"name": "STOP_DATE",
+				"type": "DATE"
+			},
+			{
+				"name": "DI_JOB_ID",
+				"type": "VARCHAR"
+			},
+			{
+				"name": "DI_LOAD_DT",
+				"type": "DATE"
+			}
+		],
+		"typeProperties": {
+			"schema": "NYPD_SCHEMA",
+			"table": "DIM_PRECINCT"
+		}
+	}
+}

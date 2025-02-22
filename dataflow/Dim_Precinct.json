@@ -1,0 +1,137 @@
+{
+	"name": "Dim_Precinct",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "SnowFlakeNYPD",
+						"type": "DatasetReference"
+					},
+					"name": "source"
+				},
+				{
+					"dataset": {
+						"referenceName": "SnowflakePrecinct",
+						"type": "DatasetReference"
+					},
+					"name": "maxPrecinct"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "SnowflakePrecinct",
+						"type": "DatasetReference"
+					},
+					"name": "sink"
+				}
+			],
+			"transformations": [
+				{
+					"name": "SrcDataWithSK"
+				},
+				{
+					"name": "aggregateCols"
+				},
+				{
+					"name": "surrogateKey"
+				},
+				{
+					"name": "derivedColumns"
+				}
+			],
+			"scriptLines": [
+				"parameters{",
+				"     job_id as string ('10')",
+				"}",
+				"source(output(",
+				"          ARREST_KEY as string,",
+				"          ARREST_DATE as string,",
+				"          PD_CD as string,",
+				"          PD_DESC as string,",
+				"          OFNS_DESC as string,",
+				"          LAW_CODE as string,",
+				"          LAW_CAT_CD as string,",
+				"          ARREST_BORO as string,",
+				"          ARREST_PRECINCT as string,",
+				"          JURISDICTION_CODE as string,",
+				"          JURISDICTION_DESC as string,",
+				"          AGE_GROUP as string,",
+				"          PERP_SEX as string,",
+				"          PERP_RACE as string,",
+				"          X_COORD_CD as string,",
+				"          Y_COORD_CD as string,",
+				"          LATITUDE as string,",
+				"          LONGITUDE as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> source",
+				"source(output(",
+				"          MXPRECINCTSK as decimal(10,0)",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     query: 'Select NVL(max(PRECINCT_SK),0) as mxPRECINCTSK from NYPD_DB.NYPD_SCHEMA.DIM_PRECINCT\\n',",
+				"     format: 'query') ~> maxPrecinct",
+				"source, maxPrecinct join(1==1,",
+				"     joinType:'cross',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> SrcDataWithSK",
+				"SrcDataWithSK aggregate(groupBy(MXPRECINCTSK,",
+				"          ARREST_PRECINCT,",
+				"          ARREST_BORO),",
+				"     Row_Count = count(ARREST_KEY)) ~> aggregateCols",
+				"aggregateCols keyGenerate(output(Row_Num as long),",
+				"     startAt: 1L,",
+				"     stepValue: 1L) ~> surrogateKey",
+				"surrogateKey derive(di_job_id = $job_id,",
+				"          di_load_dt = currentTimestamp(),",
+				"          Precinct_SK = toInteger(MXPRECINCTSK+Row_Num),",
+				"          Precinct_DK = concat(ARREST_BORO, ARREST_PRECINCT),",
+				"          BORO = iif(ARREST_BORO == 'B', 'Bronx',\r",
+				"    iif(ARREST_BORO == 'S', 'Staten Island',\r",
+				"        iif(ARREST_BORO == 'K', 'Brooklyn',\r",
+				"            iif(ARREST_BORO == 'M', 'Manhattan',\r",
+				"                iif(ARREST_BORO == 'Q', 'Queens', 'Unknown')\r",
+				"            )\r",
+				"        )\r",
+				"    )\r",
+				")\r",
+				") ~> derivedColumns",
+				"derivedColumns sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          PRECINCT_SK as string,",
+				"          ARREST_PRECINCT_ID as string,",
+				"          ARREST_PRECINCT_DK as string,",
+				"          BOROUGH as string,",
+				"          START_DATE as string,",
+				"          STOP_DATE as string,",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     truncate:true,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     stageInsert: true,",
+				"     mapColumn(",
+				"          PRECINCT_SK = Precinct_SK,",
+				"          ARREST_PRECINCT_DK = Precinct_DK,",
+				"          BOROUGH = BORO,",
+				"          START_DATE = di_load_dt,",
+				"          DI_JOB_ID = di_job_id,",
+				"          DI_LOAD_DT = di_load_dt",
+				"     )) ~> sink"
+			]
+		}
+	}
+}
