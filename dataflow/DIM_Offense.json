@@ -1,0 +1,55 @@
+{
+	"name": "DIM_Offense",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "SnowflakeSTG_DataFlow",
+						"type": "DatasetReference"
+					},
+					"name": "source"
+				},
+				{
+					"dataset": {
+						"referenceName": "SnowflakeDimOffense",
+						"type": "DatasetReference"
+					},
+					"name": "maxOffenseSK"
+				}
+			],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "SrcDataWithSK"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          LICENSE_ISSUE_DATE as string,",
+				"          LICENSE_NUMBER as string,",
+				"          ANIMAL_NAME as string,",
+				"          SPECIES as string,",
+				"          PRIMARY_BREED as string,",
+				"          SECONDARY_BREED as string,",
+				"          ZIP_CODE as string,",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> source",
+				"source(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     query: 'Select NVL(max(OFFENSE_SK),0) as mxOFFENSE_SK from NYPD_DB.NYPD_SCHEMA.DIM_OFFENSE\\n',",
+				"     format: 'query') ~> maxOffenseSK",
+				"source, maxOffenseSK join(1==1,",
+				"     joinType:'cross',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> SrcDataWithSK"
+			]
+		}
+	}
+}
