@@ -75,7 +75,7 @@
 				"     format: 'table') ~> source",
 				"source(allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     query: 'Select NVL(max(mxOFFENSESK),0) as mxOFFENSE_SK from NYPD_DB.NYPD_SCHEMA.DIM_OFFENSE\\n',",
+				"     query: 'Select NVL(max(OFFENSE_SK),0) as mxOFFENSE_SK from NYPD_DB.NYPD_SCHEMA.DIM_OFFENSE\\n',",
 				"     format: 'query') ~> maxOffenseSK",
 				"source, maxOffenseSK join(1==1,",
 				"     joinType:'cross',",
