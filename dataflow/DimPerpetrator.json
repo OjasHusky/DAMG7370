@@ -13,7 +13,7 @@
 				},
 				{
 					"dataset": {
-						"referenceName": "SnowflakeOffense",
+						"referenceName": "SnowflakePerp",
 						"type": "DatasetReference"
 					},
 					"name": "maxPerpSK"
@@ -22,7 +22,7 @@
 			"sinks": [
 				{
 					"dataset": {
-						"referenceName": "SnowflakeOffense",
+						"referenceName": "SnowflakePerp",
 						"type": "DatasetReference"
 					},
 					"name": "sink"
