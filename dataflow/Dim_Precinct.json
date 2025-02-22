@@ -124,6 +124,7 @@
 				"     mapColumn(",
 				"          PRECINCT_SK = Precinct_SK,",
 				"          ARREST_PRECINCT_DK = Precinct_DK,",
+				"          ARREST_PRECINCT_ID = ARREST_PRECINCT,",
 				"          BOROUGH = BORO,",
 				"          START_DATE = di_load_dt,",
 				"          DI_JOB_ID = di_job_id,",
