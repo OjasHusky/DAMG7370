@@ -1,0 +1,55 @@
+{
+	"name": "SnowflakeDimLaw",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "Snowflake2",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "SnowflakeV2Table",
+		"schema": [
+			{
+				"name": "LAW_SK",
+				"type": "NUMBER",
+				"precision": 10,
+				"scale": 0
+			},
+			{
+				"name": "LAW_DK",
+				"type": "VARCHAR"
+			},
+			{
+				"name": "LAW_CODE",
+				"type": "VARCHAR"
+			},
+			{
+				"name": "LAW_CAT_CD",
+				"type": "VARCHAR"
+			},
+			{
+				"name": "START_DATE",
+				"type": "DATE"
+			},
+			{
+				"name": "STOP_DATE",
+				"type": "DATE"
+			},
+			{
+				"name": "ACTIVE_FLAG",
+				"type": "VARCHAR"
+			},
+			{
+				"name": "DI_JOB_ID",
+				"type": "VARCHAR"
+			},
+			{
+				"name": "DI_JOB_DT",
+				"type": "DATE"
+			}
+		],
+		"typeProperties": {
+			"schema": "NYPD_SCHEMA",
+			"table": "DIM_LAW"
+		}
+	}
+}

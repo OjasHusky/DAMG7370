@@ -1,0 +1,129 @@
+{
+	"name": "DIM_LAW",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "SnowFlakeNYPD",
+						"type": "DatasetReference"
+					},
+					"name": "STGTable"
+				},
+				{
+					"dataset": {
+						"referenceName": "SnowflakeDimLaw",
+						"type": "DatasetReference"
+					},
+					"name": "maxLawSK"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "SnowflakeDimLaw",
+						"type": "DatasetReference"
+					},
+					"name": "sink"
+				}
+			],
+			"transformations": [
+				{
+					"name": "SrcDataWithSK"
+				},
+				{
+					"name": "aggregate"
+				},
+				{
+					"name": "surrogateKey"
+				},
+				{
+					"name": "derivedColumns"
+				}
+			],
+			"scriptLines": [
+				"parameters{",
+				"     job_id as string ('10')",
+				"}",
+				"source(output(",
+				"          ARREST_KEY as string,",
+				"          ARREST_DATE as string,",
+				"          PD_CD as string,",
+				"          PD_DESC as string,",
+				"          OFNS_DESC as string,",
+				"          LAW_CODE as string,",
+				"          LAW_CAT_CD as string,",
+				"          ARREST_BORO as string,",
+				"          ARREST_PRECINCT as string,",
+				"          JURISDICTION_CODE as string,",
+				"          JURISDICTION_DESC as string,",
+				"          AGE_GROUP as string,",
+				"          PERP_SEX as string,",
+				"          PERP_RACE as string,",
+				"          X_COORD_CD as string,",
+				"          Y_COORD_CD as string,",
+				"          LATITUDE as string,",
+				"          LONGITUDE as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> STGTable",
+				"source(output(",
+				"          MXLAWSK as decimal(10,0)",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     query: 'Select NVL(max(LAW_SK),0) as mxLawSK from NYPD_DB.NYPD_SCHEMA.DIM_LAW\\n',",
+				"     format: 'query') ~> maxLawSK",
+				"STGTable, maxLawSK join(1==1,",
+				"     joinType:'cross',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> SrcDataWithSK",
+				"SrcDataWithSK aggregate(groupBy(LAW_CODE,",
+				"          LAW_CAT_CD,",
+				"          MXLAWSK),",
+				"     ROW_Count = count(ARREST_KEY)) ~> aggregate",
+				"aggregate keyGenerate(output(Row_Num as long),",
+				"     startAt: 1L,",
+				"     stepValue: 1L) ~> surrogateKey",
+				"surrogateKey derive(di_job_id = $job_id,",
+				"          Law_SK = toInteger(MXLAWSK+Row_Num),",
+				"          di_load_date = currentTimestamp(),",
+				"          Law_DK = concat(replace(trim(LAW_CODE), ' ', ''), LAW_CAT_CD)) ~> derivedColumns",
+				"derivedColumns sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          LAW_SK as string,",
+				"          LAW_DK as string,",
+				"          LAW_CODE as string,",
+				"          LAW_CAT_CD as string,",
+				"          START_DATE as string,",
+				"          STOP_DATE as string,",
+				"          ACTIVE_FLAG as string,",
+				"          DI_JOB_ID as string,",
+				"          DI_JOB_DT as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     truncate:true,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     stageInsert: true,",
+				"     mapColumn(",
+				"          LAW_SK = Law_SK,",
+				"          LAW_DK = Law_DK,",
+				"          LAW_CODE,",
+				"          LAW_CAT_CD,",
+				"          START_DATE = di_load_date,",
+				"          DI_JOB_ID = di_job_id,",
+				"          DI_JOB_DT = di_load_date",
+				"     )) ~> sink"
+			]
+		}
+	}
+}
