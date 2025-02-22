@@ -1,5 +1,5 @@
 {
-	"name": "SnowflakeOffense",
+	"name": "SnowflakePerp",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "Snowflake2",
