@@ -1,0 +1,84 @@
+{
+	"name": "DimPerpetrator",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "SnowFlakeNYPD",
+						"type": "DatasetReference"
+					},
+					"name": "source"
+				},
+				{
+					"dataset": {
+						"referenceName": "SnowflakeOffense",
+						"type": "DatasetReference"
+					},
+					"name": "maxPerpSK"
+				}
+			],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "SrcDataWithSK"
+				},
+				{
+					"name": "aggregatedCols"
+				},
+				{
+					"name": "surrogateKey"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          ARREST_KEY as string,",
+				"          ARREST_DATE as string,",
+				"          PD_CD as string,",
+				"          PD_DESC as string,",
+				"          OFNS_DESC as string,",
+				"          LAW_CODE as string,",
+				"          LAW_CAT_CD as string,",
+				"          ARREST_BORO as string,",
+				"          ARREST_PRECINCT as string,",
+				"          JURISDICTION_CODE as string,",
+				"          JURISDICTION_DESC as string,",
+				"          AGE_GROUP as string,",
+				"          PERP_SEX as string,",
+				"          PERP_RACE as string,",
+				"          X_COORD_CD as string,",
+				"          Y_COORD_CD as string,",
+				"          LATITUDE as string,",
+				"          LONGITUDE as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> source",
+				"source(output(",
+				"          PERPETRATOR_SK as string,",
+				"          AGE_GROUP as string,",
+				"          PERP_SEX as string,",
+				"          PERP_RACE as string,",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> maxPerpSK",
+				"source, maxPerpSK join(1==1,",
+				"     joinType:'cross',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> SrcDataWithSK",
+				"SrcDataWithSK aggregate(groupBy(source@AGE_GROUP,",
+				"          source@PERP_RACE,",
+				"          source@PERP_SEX),",
+				"     Row_Count = count(ARREST_KEY)) ~> aggregatedCols",
+				"aggregatedCols keyGenerate(output(Row_Num as long),",
+				"     startAt: 1L,",
+				"     stepValue: 1L) ~> surrogateKey"
+			]
+		}
+	}
+}
