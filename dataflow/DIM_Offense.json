@@ -6,7 +6,7 @@
 			"sources": [
 				{
 					"dataset": {
-						"referenceName": "SnowflakeSTG_DataFlow",
+						"referenceName": "SnowFlakeNYPD",
 						"type": "DatasetReference"
 					},
 					"name": "source"
@@ -19,23 +19,52 @@
 					"name": "maxOffenseSK"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "SnowflakeDimOffense",
+						"type": "DatasetReference"
+					},
+					"name": "sink"
+				}
+			],
 			"transformations": [
 				{
 					"name": "SrcDataWithSK"
+				},
+				{
+					"name": "aggregatedCols"
+				},
+				{
+					"name": "surrogateKey"
+				},
+				{
+					"name": "derivedColumn"
 				}
 			],
 			"scriptLines": [
+				"parameters{",
+				"     job_id as string ('10')",
+				"}",
 				"source(output(",
-				"          LICENSE_ISSUE_DATE as string,",
-				"          LICENSE_NUMBER as string,",
-				"          ANIMAL_NAME as string,",
-				"          SPECIES as string,",
-				"          PRIMARY_BREED as string,",
-				"          SECONDARY_BREED as string,",
-				"          ZIP_CODE as string,",
-				"          DI_JOB_ID as string,",
-				"          DI_LOAD_DT as string",
+				"          ARREST_KEY as string,",
+				"          ARREST_DATE as string,",
+				"          PD_CD as string,",
+				"          PD_DESC as string,",
+				"          OFNS_DESC as string,",
+				"          LAW_CODE as string,",
+				"          LAW_CAT_CD as string,",
+				"          ARREST_BORO as string,",
+				"          ARREST_PRECINCT as string,",
+				"          JURISDICTION_CODE as string,",
+				"          JURISDICTION_DESC as string,",
+				"          AGE_GROUP as string,",
+				"          PERP_SEX as string,",
+				"          PERP_RACE as string,",
+				"          X_COORD_CD as string,",
+				"          Y_COORD_CD as string,",
+				"          LATITUDE as string,",
+				"          LONGITUDE as string",
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
@@ -48,7 +77,49 @@
 				"     joinType:'cross',",
 				"     matchType:'exact',",
 				"     ignoreSpaces: false,",
-				"     broadcast: 'auto')~> SrcDataWithSK"
+				"     broadcast: 'auto')~> SrcDataWithSK",
+				"SrcDataWithSK aggregate(groupBy(PD_CD,",
+				"          mxOFFENSE_SK,",
+				"          PD_DESC,",
+				"          OFNS_DESC),",
+				"     ROW_Count = count(ARREST_KEY)) ~> aggregatedCols",
+				"aggregatedCols keyGenerate(output(Row_Num as long),",
+				"     startAt: 1L,",
+				"     stepValue: 1L) ~> surrogateKey",
+				"surrogateKey derive(di_job_id = $job_id,",
+				"          di_load_dt = currentTimestamp(),",
+				"          Offense_SK = toInteger(mxOFFENSE_SK+Row_Num),",
+				"          column1 = ERROR_FUNCTION('')) ~> derivedColumn",
+				"derivedColumn sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          OFFENSE_SK as string,",
+				"          PD_CD as string,",
+				"          PD_DESC as string,",
+				"          OFNS_DESC as string,",
+				"          ACTIVE_FLAG as string,",
+				"          START_DATE as string,",
+				"          END_DATE as string,",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     stageInsert: true,",
+				"     mapColumn(",
+				"          OFFENSE_SK = Offense_SK,",
+				"          PD_CD,",
+				"          PD_DESC,",
+				"          OFNS_DESC,",
+				"          START_DATE = di_load_dt,",
+				"          DI_JOB_ID = di_job_id,",
+				"          DI_LOAD_DT = di_load_dt",
+				"     )) ~> sink"
 			]
 		}
 	}
