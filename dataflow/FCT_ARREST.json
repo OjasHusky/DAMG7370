@@ -59,9 +59,24 @@
 						"type": "DatasetReference"
 					},
 					"name": "maxArrestKey"
+				},
+				{
+					"dataset": {
+						"referenceName": "SnowflakeDimDate",
+						"type": "DatasetReference"
+					},
+					"name": "sourceDate"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "SnowflakeFctArrest",
+						"type": "DatasetReference"
+					},
+					"name": "sink"
+				}
+			],
 			"transformations": [
 				{
 					"name": "joinJuris"
@@ -96,6 +111,12 @@
 				{
 					"name": "MapDrifted1",
 					"description": "Creates an explicit mapping for each drifted column"
+				},
+				{
+					"name": "joinDate"
+				},
+				{
+					"name": "derivedColumnPreci"
 				}
 			],
 			"scriptLines": [
@@ -203,6 +224,23 @@
 				"     validateSchema: false,",
 				"     query: 'Select NVL(max(ARREST_KEY),0) as mxArrestKey from FACT_ARREST',",
 				"     format: 'query') ~> maxArrestKey",
+				"source(output(",
+				"          DT as string,",
+				"          ABRV_DAY_NAME as string,",
+				"          MONTH_NAME as string,",
+				"          START_DAY_OF_MONTH as string,",
+				"          END_DAY_OF_MONTH as string,",
+				"          QUARTER_NUM as string,",
+				"          DAY_OF_WEEK as string,",
+				"          IS_WEEKEND as string,",
+				"          YEAR_NUM as string,",
+				"          MONTH_NUM as string,",
+				"          DAY_NUM as string,",
+				"          DATE_DIM_SK as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> sourceDate",
 				"sourceSTG, sourceJuris join(sourceSTG@JURISDICTION_CODE == sourceJuris@JURISDICTION_CODE",
 				"     && sourceSTG@JURISDICTION_DESC == sourceJuris@JURISDICTION_DESC,",
 				"     joinType:'left',",
@@ -237,13 +275,14 @@
 				"     matchType:'exact',",
 				"     ignoreSpaces: false,",
 				"     broadcast: 'auto')~> joinPerp",
-				"joinPerp, sourcePrecinct join(ARREST_PRECINCT == ARREST_PRECINCT_ID",
+				"joinPerp, derivedColumnPreci join(ARREST_PRECINCT == ARREST_PRECINCT_ID",
 				"     && ARREST_BORO == BOROUGH,",
 				"     joinType:'left',",
 				"     matchType:'exact',",
 				"     ignoreSpaces: false,",
 				"     broadcast: 'auto')~> joinPrecinct",
 				"MapDrifted1 aggregate(groupBy(JURISDICTION_SK,",
+				"          DATE_DIM_SK,",
 				"          MXARRESTKEY,",
 				"          LAW_SK,",
 				"          LOCATION_SK,",
@@ -254,7 +293,7 @@
 				"     Row_Count = count(ARREST_KEY)) ~> aggregate",
 				"surrogateKey derive(di_job_id = $job_id,",
 				"          di_load_dt = currentTimestamp(),",
-				"          Arrest_Key = toInteger(mxArrestKey+Row_Num)) ~> derivedColumns",
+				"          Arrest_Key = toInteger(MXARRESTKEY+Row_Num)) ~> derivedColumns",
 				"joinPrecinct, maxArrestKey join(1==1,",
 				"     joinType:'cross',",
 				"     matchType:'exact',",
@@ -263,7 +302,57 @@
 				"aggregate keyGenerate(output(Row_Num as long),",
 				"     startAt: 1L,",
 				"     stepValue: 1L) ~> surrogateKey",
-				"joinMaxArrestKey derive(MXARRESTKEY = toDecimal(byName('MXARRESTKEY'))) ~> MapDrifted1"
+				"joinDate derive(MXARRESTKEY = toDecimal(byName('MXARRESTKEY'))) ~> MapDrifted1",
+				"joinMaxArrestKey, sourceDate join(ARREST_DATE == DT,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> joinDate",
+				"sourcePrecinct derive(BOROUGH = iif(BOROUGH == 'Bronx', 'B',\r",
+				"    iif(BOROUGH == 'Staten Island', 'S',\r",
+				"        iif(BOROUGH == 'Brooklyn', 'K',\r",
+				"            iif(BOROUGH == 'Manhattan', 'M',\r",
+				"                iif(BOROUGH == 'Queens', 'Q', 'Unknown')\r",
+				"            )\r",
+				"        )\r",
+				"    )\r",
+				")\r",
+				") ~> derivedColumnPreci",
+				"derivedColumns sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          ARREST_KEY as string,",
+				"          BOROUGH_SK as string,",
+				"          PRECINCT_SK as string,",
+				"          OFFENSE_SK as string,",
+				"          LAW_SK as string,",
+				"          JURISDICTION_SK as string,",
+				"          PERPETRATOR_SK as string,",
+				"          DATE_SK as string,",
+				"          ARREST_COUNT as string,",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     stageInsert: true,",
+				"     mapColumn(",
+				"          ARREST_KEY = derivedColumns@Arrest_Key,",
+				"          PRECINCT_SK,",
+				"          OFFENSE_SK,",
+				"          LAW_SK,",
+				"          JURISDICTION_SK,",
+				"          PERPETRATOR_SK,",
+				"          DATE_SK = DATE_DIM_SK,",
+				"          ARREST_COUNT = Row_Count,",
+				"          DI_JOB_ID = di_job_id,",
+				"          DI_LOAD_DT = di_load_dt",
+				"     )) ~> sink"
 			]
 		}
 	}
