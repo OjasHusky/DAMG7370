@@ -47,7 +47,13 @@
 				"typeProperties": {
 					"dataflow": {
 						"referenceName": "DIM_LAW",
-						"type": "DataFlowReference"
+						"type": "DataFlowReference",
+						"parameters": {
+							"job_id": {
+								"value": "'@{substring(pipeline().RunId,1,10)}'",
+								"type": "Expression"
+							}
+						}
 					},
 					"compute": {
 						"coreCount": 8,
@@ -71,7 +77,13 @@
 				"typeProperties": {
 					"dataflow": {
 						"referenceName": "DIM_Offense",
-						"type": "DataFlowReference"
+						"type": "DataFlowReference",
+						"parameters": {
+							"job_id": {
+								"value": "'@{substring(pipeline().RunId,1,10)}'",
+								"type": "Expression"
+							}
+						}
 					},
 					"compute": {
 						"coreCount": 8,
@@ -95,7 +107,13 @@
 				"typeProperties": {
 					"dataflow": {
 						"referenceName": "DimPerpetrator",
-						"type": "DataFlowReference"
+						"type": "DataFlowReference",
+						"parameters": {
+							"job_id": {
+								"value": "'@{substring(pipeline().RunId,1,10)}'",
+								"type": "Expression"
+							}
+						}
 					},
 					"compute": {
 						"coreCount": 8,
@@ -119,7 +137,43 @@
 				"typeProperties": {
 					"dataflow": {
 						"referenceName": "Dim_Precinct",
-						"type": "DataFlowReference"
+						"type": "DataFlowReference",
+						"parameters": {
+							"job_id": {
+								"value": "'@{substring(pipeline().RunId,1,10)}'",
+								"type": "Expression"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "Dim_LOC",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "Dim_NYCLoc",
+						"type": "DataFlowReference",
+						"parameters": {
+							"job_id": {
+								"value": "'@{substring(pipeline().RunId,1,10)}'",
+								"type": "Expression"
+							}
+						}
 					},
 					"compute": {
 						"coreCount": 8,
