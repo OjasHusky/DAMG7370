@@ -1,0 +1,51 @@
+{
+	"name": "SnowflakeNYLOC",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "Snowflake2",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "SnowflakeV2Table",
+		"schema": [
+			{
+				"name": "LOCATION_SK",
+				"type": "NUMBER",
+				"precision": 10,
+				"scale": 0
+			},
+			{
+				"name": "LATITUDE",
+				"type": "FLOAT"
+			},
+			{
+				"name": "LONGITUDE",
+				"type": "FLOAT"
+			},
+			{
+				"name": "X_COORD_CD",
+				"type": "NUMBER",
+				"precision": 38,
+				"scale": 0
+			},
+			{
+				"name": "Y_COORD_CD",
+				"type": "NUMBER",
+				"precision": 38,
+				"scale": 0
+			},
+			{
+				"name": "DI_JOB_ID",
+				"type": "VARCHAR"
+			},
+			{
+				"name": "DI_LOAD_DT",
+				"type": "DATE"
+			}
+		],
+		"typeProperties": {
+			"schema": "NYPD_SCHEMA",
+			"table": "DIM_LOCATION"
+		}
+	}
+}
