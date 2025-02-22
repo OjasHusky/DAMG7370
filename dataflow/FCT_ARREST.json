@@ -1,0 +1,270 @@
+{
+	"name": "FCT_ARREST",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "SnowFlakeNYPD",
+						"type": "DatasetReference"
+					},
+					"name": "sourceSTG"
+				},
+				{
+					"dataset": {
+						"referenceName": "DIM_JURISD",
+						"type": "DatasetReference"
+					},
+					"name": "sourceJuris"
+				},
+				{
+					"dataset": {
+						"referenceName": "SnowflakeNYLOC",
+						"type": "DatasetReference"
+					},
+					"name": "sourceLoc"
+				},
+				{
+					"dataset": {
+						"referenceName": "SnowflakePerp",
+						"type": "DatasetReference"
+					},
+					"name": "sourcePerp"
+				},
+				{
+					"dataset": {
+						"referenceName": "SnowflakeDimOffense",
+						"type": "DatasetReference"
+					},
+					"name": "sourceOffense"
+				},
+				{
+					"dataset": {
+						"referenceName": "SnowflakeDimLaw",
+						"type": "DatasetReference"
+					},
+					"name": "sourceLaw"
+				},
+				{
+					"dataset": {
+						"referenceName": "SnowflakePrecinct",
+						"type": "DatasetReference"
+					},
+					"name": "sourcePrecinct"
+				},
+				{
+					"dataset": {
+						"referenceName": "SnowflakeFctArrest",
+						"type": "DatasetReference"
+					},
+					"name": "maxArrestKey"
+				}
+			],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "joinJuris"
+				},
+				{
+					"name": "joinLaw"
+				},
+				{
+					"name": "joinLoc"
+				},
+				{
+					"name": "joinOffense"
+				},
+				{
+					"name": "joinPerp"
+				},
+				{
+					"name": "joinPrecinct"
+				},
+				{
+					"name": "aggregate"
+				},
+				{
+					"name": "derivedColumns"
+				},
+				{
+					"name": "joinMaxArrestKey"
+				},
+				{
+					"name": "surrogateKey"
+				},
+				{
+					"name": "MapDrifted1",
+					"description": "Creates an explicit mapping for each drifted column"
+				}
+			],
+			"scriptLines": [
+				"parameters{",
+				"     job_id as string ('10')",
+				"}",
+				"source(output(",
+				"          ARREST_KEY as string,",
+				"          ARREST_DATE as string,",
+				"          PD_CD as string,",
+				"          PD_DESC as string,",
+				"          OFNS_DESC as string,",
+				"          LAW_CODE as string,",
+				"          LAW_CAT_CD as string,",
+				"          ARREST_BORO as string,",
+				"          ARREST_PRECINCT as string,",
+				"          JURISDICTION_CODE as string,",
+				"          JURISDICTION_DESC as string,",
+				"          AGE_GROUP as string,",
+				"          PERP_SEX as string,",
+				"          PERP_RACE as string,",
+				"          X_COORD_CD as string,",
+				"          Y_COORD_CD as string,",
+				"          LATITUDE as string,",
+				"          LONGITUDE as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> sourceSTG",
+				"source(output(",
+				"          JURISDICTION_SK as string,",
+				"          JURISDICTION_CODE as string,",
+				"          JURISDICTION_DESC as string,",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> sourceJuris",
+				"source(output(",
+				"          LOCATION_SK as string,",
+				"          LATITUDE as string,",
+				"          LONGITUDE as string,",
+				"          X_COORD_CD as string,",
+				"          Y_COORD_CD as string,",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> sourceLoc",
+				"source(output(",
+				"          PERPETRATOR_SK as string,",
+				"          AGE_GROUP as string,",
+				"          PERP_SEX as string,",
+				"          PERP_RACE as string,",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> sourcePerp",
+				"source(output(",
+				"          OFFENSE_SK as string,",
+				"          PD_CD as string,",
+				"          PD_DESC as string,",
+				"          OFNS_DESC as string,",
+				"          ACTIVE_FLAG as string,",
+				"          START_DATE as string,",
+				"          END_DATE as string,",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> sourceOffense",
+				"source(output(",
+				"          LAW_SK as string,",
+				"          LAW_DK as string,",
+				"          LAW_CODE as string,",
+				"          LAW_CAT_CD as string,",
+				"          START_DATE as string,",
+				"          STOP_DATE as string,",
+				"          ACTIVE_FLAG as string,",
+				"          DI_JOB_ID as string,",
+				"          DI_JOB_DT as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> sourceLaw",
+				"source(output(",
+				"          PRECINCT_SK as string,",
+				"          ARREST_PRECINCT_ID as string,",
+				"          ARREST_PRECINCT_DK as string,",
+				"          BOROUGH as string,",
+				"          START_DATE as string,",
+				"          STOP_DATE as string,",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> sourcePrecinct",
+				"source(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     query: 'Select NVL(max(ARREST_KEY),0) as mxArrestKey from FACT_ARREST',",
+				"     format: 'query') ~> maxArrestKey",
+				"sourceSTG, sourceJuris join(sourceSTG@JURISDICTION_CODE == sourceJuris@JURISDICTION_CODE",
+				"     && sourceSTG@JURISDICTION_DESC == sourceJuris@JURISDICTION_DESC,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> joinJuris",
+				"joinJuris, sourceLaw join(sourceSTG@LAW_CODE == sourceLaw@LAW_CODE",
+				"     && sourceSTG@LAW_CAT_CD == sourceLaw@LAW_CAT_CD,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> joinLaw",
+				"joinLaw, sourceLoc join(sourceSTG@X_COORD_CD == sourceLoc@X_COORD_CD",
+				"     && sourceSTG@Y_COORD_CD == sourceLoc@Y_COORD_CD",
+				"     && sourceSTG@LATITUDE == sourceLoc@LATITUDE",
+				"     && sourceSTG@LONGITUDE == sourceLoc@LONGITUDE,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> joinLoc",
+				"joinLoc, sourceOffense join(sourceSTG@PD_CD == sourceOffense@PD_CD",
+				"     && sourceSTG@PD_DESC == sourceOffense@PD_DESC",
+				"     && sourceSTG@OFNS_DESC == sourceOffense@OFNS_DESC,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> joinOffense",
+				"joinOffense, sourcePerp join(sourceSTG@AGE_GROUP == sourcePerp@AGE_GROUP",
+				"     && sourceSTG@PERP_SEX == sourcePerp@PERP_SEX",
+				"     && sourceSTG@PERP_RACE == sourcePerp@PERP_RACE,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> joinPerp",
+				"joinPerp, sourcePrecinct join(ARREST_PRECINCT == ARREST_PRECINCT_ID",
+				"     && ARREST_BORO == BOROUGH,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> joinPrecinct",
+				"MapDrifted1 aggregate(groupBy(JURISDICTION_SK,",
+				"          MXARRESTKEY,",
+				"          LAW_SK,",
+				"          LOCATION_SK,",
+				"          OFFENSE_SK,",
+				"          PERPETRATOR_SK,",
+				"          PRECINCT_SK,",
+				"          ARREST_KEY),",
+				"     Row_Count = count(ARREST_KEY)) ~> aggregate",
+				"surrogateKey derive(di_job_id = $job_id,",
+				"          di_load_dt = currentTimestamp(),",
+				"          Arrest_Key = toInteger(mxArrestKey+Row_Num)) ~> derivedColumns",
+				"joinPrecinct, maxArrestKey join(1==1,",
+				"     joinType:'cross',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> joinMaxArrestKey",
+				"aggregate keyGenerate(output(Row_Num as long),",
+				"     startAt: 1L,",
+				"     stepValue: 1L) ~> surrogateKey",
+				"joinMaxArrestKey derive(MXARRESTKEY = toDecimal(byName('MXARRESTKEY'))) ~> MapDrifted1"
+			]
+		}
+	}
+}
