@@ -114,8 +114,8 @@
 				"     mapColumn(",
 				"          PERPETRATOR_SK,",
 				"          AGE_GROUP = MXPERPSK,",
-				"          PERP_SEX = PERP_RACE,",
-				"          PERP_RACE = PERP_SEX,",
+				"          PERP_SEX,",
+				"          PERP_RACE,",
 				"          DI_JOB_ID = di_job_id,",
 				"          DI_LOAD_DT = di_load_dt",
 				"     )) ~> sink"
