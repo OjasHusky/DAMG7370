@@ -271,7 +271,7 @@
 				"joinOffense, sourcePerp join(sourceSTG@AGE_GROUP == sourcePerp@AGE_GROUP",
 				"     && sourceSTG@PERP_SEX == sourcePerp@PERP_SEX",
 				"     && sourceSTG@PERP_RACE == sourcePerp@PERP_RACE,",
-				"     joinType:'left',",
+				"     joinType:'inner',",
 				"     matchType:'exact',",
 				"     ignoreSpaces: false,",
 				"     broadcast: 'auto')~> joinPerp",
