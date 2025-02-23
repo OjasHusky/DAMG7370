@@ -133,6 +133,8 @@
 			{
 				"name": "Dim_Precinct",
 				"type": "ExecuteDataFlow",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [],
 				"policy": {
 					"timeout": "0.12:00:00",
@@ -195,8 +197,6 @@
 			{
 				"name": "Fct_Arrest",
 				"type": "ExecuteDataFlow",
-				"state": "Inactive",
-				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [],
 				"policy": {
 					"timeout": "0.12:00:00",
@@ -209,7 +209,13 @@
 				"typeProperties": {
 					"dataflow": {
 						"referenceName": "FCT_ARREST",
-						"type": "DataFlowReference"
+						"type": "DataFlowReference",
+						"parameters": {
+							"job_id": {
+								"value": "'@{substring(pipeline().RunId,1,10)}'",
+								"type": "Expression"
+							}
+						}
 					},
 					"compute": {
 						"coreCount": 8,
