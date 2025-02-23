@@ -16,9 +16,7 @@
 			},
 			{
 				"name": "ARREST_PRECINCT_ID",
-				"type": "NUMBER",
-				"precision": 10,
-				"scale": 0
+				"type": "VARCHAR"
 			},
 			{
 				"name": "ARREST_PRECINCT_DK",
