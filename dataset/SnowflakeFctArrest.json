@@ -9,6 +9,12 @@
 		"type": "SnowflakeV2Table",
 		"schema": [
 			{
+				"name": "ARREST_SK",
+				"type": "NUMBER",
+				"precision": 10,
+				"scale": 0
+			},
+			{
 				"name": "ARREST_KEY",
 				"type": "NUMBER",
 				"precision": 10,
@@ -52,9 +58,7 @@
 			},
 			{
 				"name": "DATE_SK",
-				"type": "NUMBER",
-				"precision": 10,
-				"scale": 0
+				"type": "VARCHAR"
 			},
 			{
 				"name": "DI_JOB_ID",
