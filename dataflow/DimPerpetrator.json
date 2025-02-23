@@ -112,7 +112,7 @@
 				"     stageInsert: true,",
 				"     mapColumn(",
 				"          PERPETRATOR_SK,",
-				"          AGE_GROUP = MXPERPSK,",
+				"          AGE_GROUP,",
 				"          PERP_SEX,",
 				"          PERP_RACE,",
 				"          DI_JOB_ID = di_job_id,",
