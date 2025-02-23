@@ -323,6 +323,7 @@
 				"derivedColumns sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
+				"          ARREST_SK as string,",
 				"          ARREST_KEY as string,",
 				"          LOCATION_SK as string,",
 				"          PRECINCT_SK as string,",
@@ -353,8 +354,7 @@
 				"          PERPETRATOR_SK,",
 				"          DATE_SK = DATE_DIM_SK,",
 				"          DI_JOB_ID = di_job_id,",
-				"          DI_LOAD_DT = di_load_dt,",
-				"          Arrest_SK",
+				"          DI_LOAD_DT = di_load_dt",
 				"     )) ~> sink"
 			]
 		}
