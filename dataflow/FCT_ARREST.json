@@ -260,7 +260,7 @@
 				"     && sourceSTG@Y_COORD_CD == sourceLoc@Y_COORD_CD",
 				"     && sourceSTG@LATITUDE == sourceLoc@LATITUDE",
 				"     && sourceSTG@LONGITUDE == sourceLoc@LONGITUDE,",
-				"     joinType:'left',",
+				"     joinType:'inner',",
 				"     matchType:'exact',",
 				"     ignoreSpaces: false,",
 				"     broadcast: 'auto')~> joinLoc",
