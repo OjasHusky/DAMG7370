@@ -116,7 +116,7 @@
 					"description": "Creates an explicit mapping for each drifted column"
 				},
 				{
-					"name": "aggregate2"
+					"name": "aggregate"
 				}
 			],
 			"scriptLines": [
@@ -287,7 +287,7 @@
 				"surrogateKey derive(di_job_id = $job_id,",
 				"          di_load_dt = currentTimestamp(),",
 				"          ARREST_SK = toInteger(MXARRESTSK+Row_Num)) ~> derivedColumns",
-				"aggregate2, maxArrestSK join(1==1,",
+				"aggregate, maxArrestSK join(1==1,",
 				"     joinType:'cross',",
 				"     matchType:'exact',",
 				"     ignoreSpaces: false,",
@@ -318,7 +318,7 @@
 				"          PERPETRATOR_SK,",
 				"          PRECINCT_SK,",
 				"          DATE_DIM_SK),",
-				"     Row_Count = count(ARREST_KEY)) ~> aggregate2",
+				"     Row_Count = count(ARREST_KEY)) ~> aggregate",
 				"derivedColumns sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
