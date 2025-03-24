@@ -5,8 +5,6 @@
 			{
 				"name": "CSV_to_Parquet",
 				"type": "Copy",
-				"state": "Inactive",
-				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [],
 				"policy": {
 					"timeout": "0.12:00:00",
@@ -72,7 +70,7 @@
 						"referenceName": "Parquet1",
 						"type": "DatasetReference",
 						"parameters": {
-							"fileName": "customer_data_part1.parquet"
+							"fileName": "sales_data.parquet"
 						}
 					}
 				]
@@ -81,7 +79,7 @@
 		"variables": {
 			"fileName": {
 				"type": "String",
-				"defaultValue": "customer_data_part1.parquet"
+				"defaultValue": "sales_data.parquet"
 			}
 		},
 		"annotations": []
