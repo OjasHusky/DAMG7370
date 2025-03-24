@@ -1,0 +1,64 @@
+{
+	"name": "dim_cust",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureDataLakeStorage1",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "customer_data_part1.csv",
+				"fileSystem": "salescsvs"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "invoiceId",
+				"type": "String"
+			},
+			{
+				"name": "customerid",
+				"type": "String"
+			},
+			{
+				"name": "invoiceDate",
+				"type": "String"
+			},
+			{
+				"name": "ShipTo",
+				"type": "String"
+			},
+			{
+				"name": "ShipTo_City",
+				"type": "String"
+			},
+			{
+				"name": "ShipTo_Country",
+				"type": "String"
+			},
+			{
+				"name": "SalespersonPersonID",
+				"type": "String"
+			},
+			{
+				"name": "SalespersonName",
+				"type": "String"
+			},
+			{
+				"name": "total_product_cnt",
+				"type": "String"
+			},
+			{
+				"name": "Total",
+				"type": "String"
+			}
+		]
+	}
+}
